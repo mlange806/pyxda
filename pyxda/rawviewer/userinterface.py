@@ -1,17 +1,14 @@
 #!/usr/bin/env python
 
-from traits.api import HasTraits, Instance, Directory
-from enthought.traits.ui.api import View,Item, Group, HSplit, Handler, VSplit, \
-                    HGroup, VGroup, InstanceEditor, UItem
-from traits.api import *
-from enable.api import ComponentEditor,Component, KeySpec
+from traits.api import HasTraits, Instance
+from enthought.traits.ui.api import View, HSplit,VSplit, VGroup, UItem
+from traits.api import on_trait_change
+from enable.api import ComponentEditor, Component
 from enthought.traits.ui.menu import NoButtons
-from chaco.api import ArrayPlotData, Plot, BarPlot, jet, GridContainer, HPlotContainer, \
-                        VPlotContainer
+from chaco.api import HPlotContainer, VPlotContainer
 
 from rawviewer import RawViewer
 from controlpanel import ControlPanel, MetadataPanel
-from display import Display
 from handler import PyXDAHandler
 import sys
 import time
@@ -40,7 +37,7 @@ class UserInterface(HasTraits):
              HSplit(
                VSplit(
                     UItem('imagepanel', editor=ComponentEditor(), padding=0),
-                    UItem('mdpanel', style="custom", padding=5, height=85, width=700),
+                    UItem('mdpanel', style="custom", padding=5, height=85, width=700)
                      ),
                VGroup(
                     UItem('cpanel', style="custom", width=-430, padding=10),
@@ -87,6 +84,7 @@ class UserInterface(HasTraits):
             for key in pic.metadata.keys():
                 setattr(self.mdpanel, key, pic.metadata[key])
         return
+        
     @on_trait_change('rawviewer.display.filename', post_init=True)
     def _filename_changed(self):
         print 'filename changed'
@@ -94,6 +92,11 @@ class UserInterface(HasTraits):
             self.cpanel.filename = ''
         else:
             self.cpanel.filename = self.rawviewer.datalist[self.rawviewer.display.filename].name
+    
+    @on_trait_change('rawviewer.loadimage.message', post_init=True)
+    def handleMessage(self):
+        if self.rawviewer.loadimage.message != '':
+            self.cpanel.messageLog = self.rawviewer.loadimage.message
 
     
     # TODO: Update
@@ -112,7 +115,6 @@ class UserInterface(HasTraits):
         cont.add(imgcont)
         cont.add(histogram)
         cont.add(plot1d)
-
         
         self.imagepanel = cont
         self.imagepanel.get_preferred_size()

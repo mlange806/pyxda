@@ -1,17 +1,34 @@
 #!/usr/bin/env python
-
-import os
-import numpy as np
-import re
 import time
-from enthought.traits.api import Dict, Instance, Directory, HasTraits
+import os
 import threading
 import glob
+from enthought.traits.api import HasTraits, Instance, Str
 
 # TODO: Enable Live Mode
 class LoadImage(HasTraits, threading.Thread):
+    """Thread that loads image paths into queue
+    
+    Waits until dirpath is not empty and then loads all .tif paths into a list.
+    These paths are then inserted into an associated job queue with the title
+    'newimage'.
+    
+    Exceptions:
+        TypeError: Is thrown on instantiation when a queue and dirpath are not 
+                   specified or are of the wrong type.             
+    """
 
     def __init__(self, queue, dirpath):
+        """Constructor called when a LoadImage object is initialized
+        
+        Creates thread and defines thread attributes. Specifies the directory 
+        path. Gives the object access to a queue of processes.
+
+    	Args:
+    	    queue:   Job queue of processes  
+       	    dirpath: Path of the directory containing the image files 
+    	"""
+    	
         threading.Thread.__init__(self)
         super(LoadImage, self).__init__() 
 
@@ -21,89 +38,64 @@ class LoadImage(HasTraits, threading.Thread):
         self.jobqueue = queue
         self.backgroundenable = False
         self.daemon=True
+        self.add_trait('message', Str(''))
+        
+        return
 
     def run(self):
-        print 'Live mode start'
-        self.initLive()
-        self.livemode()
-        print 'Live mode stop'
+        """Called when a LoadImage object's start() method is called
+        
+        Makes method calls that extract tiff images from the directory located
+        at dirpath and inserts them into jobqueue.    
+    	"""
+    	
+        self.loadPath()
+        self.putPath()
         return
 
-    def initLive(self):
-        while True:
-            if self.dirpath == '':
-                time.sleep(0.5)
-            elif os.path.isdir(self.dirpath):
-                self.filelist = glob.glob(self.dirpath + '/*.tif')
-                break
-                '''dirlist = os.listdir(self.dirpath)
-                for f in dirlist:
-                    if f[-4:] == "tiff" or f[-3:] == "tif":
-                        self.filelist.append(f)
-                break
-            else:
-                print 'No data found or directory does not exist. (LoadImage)'
-                '''
-        '''
-        self.startime = time.time()
-        self.lastmtime = os.path.getmtime(self.dirpath)
-        self.lastctime = os.path.getctime(self.dirpath)
-        self.lastatime = os.path.getatime(self.dirpath)
-        '''
+    def loadPath(self):
+        """Extracts .tif paths from dirpath into filelist
+        
+        Loops until dirpath is not empty. When dirpath
+        contains a string it will load all .tif file paths in that directory 
+        into filelist and break the loop.   
+        
+        Exceptions:
+                 NoTiffs:     Raised when a chosen directory contains no tiff 
+                              files
+                 InvalidPath: Raised when the path is not real  
+    	"""
+    	try:
+            while True:
+                if self.dirpath == '':
+                    time.sleep(0.5)
+                elif os.path.isdir(self.dirpath):
+                    self.filelist = glob.glob(self.dirpath + '/*.tif')
+                    if len(self.filelist) == 0:
+                            raise Exception('No tiff files in that directory.')
+                    self.message = str(' ')
+                    break
+                else:
+                    raise Exception('Invalid file path selected.')
+                    break 
+        except Exception as msg:
+            self.message = str(msg)
         return
 
-    def livemode(self):
+    def putPath(self):
+        """Inserts paths in filelist into jobqueue with job description
+        
+        Adds image paths to the queue in the following pattern:
+            [['newimage', {'path':<path1>}],
+             ['newimage', {'path':<path2>}],
+             ['newimage', {'path':<path3>}],
+             ['initcache']]
+            etc...  
+    	"""
+        
         #TODO: Hard Coded
-        '''
-        while True:
-            
-            if self.checkTime(self.tifdirectory):di
-                newexistfileset = self.genFileSet() 
-                newfileset = newexistfileset - self.existfileset
-                newfilelist = sorted(list(newfileset))
-                newfilelistfull = map(lambda name: os.path.abspath(self.tifdirectory+'/'+name), newfilelist)
-                if len(newfilelist)>0:
-                    for newfile in newfilelistfull:
-                        self.checkFileVal(newfile)
-
-            #self.existfileset = newexistfileset
-            #    else:
-            #        time.sleep(0.5)
-            #else:
-            #    time.sleep(0.5)
-
-        '''
         for i in range(len(self.filelist)):
             self.jobqueue.put(['newimage', {'path':self.filelist[i]}])
-            print self.filelist[i]
-            #print 'Image Process Sent'
             if i == 2:
                 self.jobqueue.put(['initcache'])
         return
-
-    def checkTime(self, tifpath):
-        if tifpath != self.lasttifdirectory:
-            self.initLive()
-            flag = False
-        else:
-            flag = False
-            if os.path.getatime(tifpath) != self.lastatime:
-                flag = True
-                self.lastatime = os.path.getatime(tifpath)
-                #print 'atime'+str(self.lastatime)
-            if os.path.getmtime(tifpath) != self.lastmtime:
-                flag = True
-                self.lastmtime = os.path.getmtime(tifpath)
-                #print 'mtime'+str(self.lastmtime)
-            if os.path.getctime(tifpath) != self.lastctime:
-                flag = True
-                self.lastctime = os.path.getctime(tifpath)
-                #print 'atime'+str(self.lastctime)
-        return flag
-
-if __name__ == '__main__':
-    '''
-    dirpath = '/Users/Mike/Downloads/1208NSLSX17A_LiRh2O4/'
-    output = getTiffImages(dirpath)
-    print output
-    '''

@@ -22,9 +22,11 @@ class ControlPanel(HasTraits):
     datalistlength = Int(0) 
     rrchoice = Enum('Choose a Reduced Representation', 'Total Intensity', 'Mean', 'Standard Deviation', 'Pixels Above Upper Bound', 'Pixels Below Lower Bound')
     filename = Str('')
+    messageLog = Str('')
 
     group = Group(
                 Item('dirpath', editor=DirectoryEditor(), show_label=False),
+                Item('messageLog'),
                 HGroup(
                     HGroup(
                         Item('left_arrow', show_label = False), 

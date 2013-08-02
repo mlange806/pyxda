@@ -1,21 +1,13 @@
 #!/usr/bin/env python
 
 # EDIT IMPORTS AT END
-import chaco.api
-from enthought.traits.api import HasTraits, Instance, \
-                                Dict, Event, Int, List, Bool, String
-from chaco.api import ArrayPlotData, Plot, jet
-import traitsui.api
-import enable.api
+from enthought.traits.api import HasTraits, Instance, Event, Int, List, Bool, Str
+from chaco.api import Plot
 import numpy as np
-import scipy as sp
-import fabio
 import Queue
 import threading
-import time
 
 from display import Display
-from controlpanel import ControlPanel, MetadataPanel
 from imagecontainer import Image, ImageCache
 from loadimages import LoadImage
 
@@ -57,6 +49,7 @@ class RawViewer(HasTraits):
 
     def initDisplay(self):
         self.add_trait('display', Display(self.jobqueue))
+        self.add_trait('loadimage', Instance(LoadImage))
         # TODO: Move to Display.
         self.add_trait('imageplot', Instance(Plot, 
                                         self.display.plotImage(self.pic)))
@@ -65,6 +58,7 @@ class RawViewer(HasTraits):
         self.plot1d.value_axis.title = "1D Cut"
         self.add_trait('histogram', Instance(Plot,
                                         self.display.plotHistogram(self.pic)))
+        self.add_trait('messageLog', Str(''))
         self.newndx = -1
         return
     
@@ -83,7 +77,7 @@ class RawViewer(HasTraits):
         '''add new image and create jobs to process new image
         image:    2d ndarray, new 2d image array
         '''
-        print 'Image Added'
+        #print 'Image Added'
         listn = len(self.datalist)
         self.datalist.append(Image(listn, path))
         self.hasImage = True
@@ -113,10 +107,10 @@ class RawViewer(HasTraits):
     def startLoad(self, dirpath):
         print 'Load Started'
         if self.hasImage == True:
-            self.resetViewer()
-        self.loadimage = LoadImage(self.jobqueue, dirpath)
+            self.resetViewer()   
+        self.loadimage = LoadImage(self.jobqueue, dirpath) 
         self.loadimage.start()
-    
+              
     # TODO: not as important
     def initCache(self):
         print 'Init Cache'
@@ -316,13 +310,3 @@ class RawViewer(HasTraits):
             jobdata = []
             self.jobqueue.task_done()
         return
-
-def main():
-    a = PyXDA()
-    a.startProcessJob()
-    a.loadimage.initLive()
-    a.loadimage.start()
-    return
-    
-if __name__=='__main__':
-    main()

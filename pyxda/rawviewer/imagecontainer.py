@@ -1,11 +1,6 @@
 #!/usr/bin/env python
-
-import numpy as np
-import scipy as sp
-import scipy.sparse as ssp
 import fabio
-import os
-from traits.api import HasTraits, Instance, Int
+from traits.api import HasTraits
 from collections import deque
 
 class Image(object):
@@ -22,7 +17,7 @@ class Image(object):
         self.n = n
         self.data = None
         self.metadata = self._parseMD()
-        print path
+        #print path
         return
 
     def _parseMD(self):
@@ -38,13 +33,14 @@ class Image(object):
 
             fp.close()
         except IOError:
-            print 'No metadata found for %s' % self.path
+            pass
+            #print 'No metadata found for %s' % self.path
         return md
 
     def load(self):
         '''return 2d ndarray image array'''
         if self.data is None:
-            print 'load data for ' + self.name
+            #print 'load data for ' + self.name
             fo = fabio.open(self.path)
             self.data = fo.data
         return
