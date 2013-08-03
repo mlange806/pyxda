@@ -1,4 +1,18 @@
 #!/usr/bin/env python
+# coding=utf-8
+##############################################################################
+#
+# pyxda.srxes       X-ray Data Analysis Library
+#                   (c) 2013 National Synchrotron Light Source II,
+#                   Brookhaven National Laboratory, Upton, NY.
+#                   All rights reserved.
+#
+# File coded by:    Michael Saltzman
+#
+# See AUTHORS.txt for a list of people who contributed.
+# See LICENSE.txt for license information.
+#
+##############################################################################
 
 # EDIT IMPORTS AT END
 from enthought.traits.api import HasTraits, Instance, Event, Int, List, Bool, Str
@@ -309,4 +323,15 @@ class RawViewer(HasTraits):
                 self.startLoad(*kwargs)
             jobdata = []
             self.jobqueue.task_done()
+            
         return
+
+def main():
+    a = PyXDA()
+    a.startProcessJob()
+    a.loadimage.initLive()
+    a.loadimage.start()
+    return
+    
+if __name__=='__main__':
+    main()
