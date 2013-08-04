@@ -14,7 +14,7 @@
 #
 ##############################################################################
 
-from traits.api import HasTraits, Directory, Button, Int, Str, Enum
+from traits.api import HasTraits, Directory, Button, Int, Str, Enum, CStr
 from enthought.traits.ui.api import View, Item, Group, HGroup, HSplit, VGroup, \
                                     Heading, DirectoryEditor, TitleEditor, VFlow, \
                                     VGrid, UItem
@@ -35,11 +35,10 @@ class ControlPanel(HasTraits):
     datalistlength = Int(0) 
     rrchoice = Enum('Choose a Reduced Representation', 'Total Intensity', 'Mean', 'Standard Deviation', 'Pixels Above Upper Bound', 'Pixels Below Lower Bound')
     filename = Str('')
-    messageLog = Str('')
+    messageLog = CStr('')
 
     group = Group(
                 Item('dirpath', editor=DirectoryEditor(), show_label=False),
-                Item('messageLog'),
                 HGroup(
                     HGroup(
                         Item('left_arrow', show_label = False), 
@@ -61,6 +60,21 @@ class ControlPanel(HasTraits):
                 )
     
     view = View(group)
+    
+class MessageLog(HasTraits):
+    line1 = Str('Out: ')
+    line2 = Str('Out: ')
+    line3 = Str('Out: ')
+    
+    group = Group(
+               UItem('line1', style = 'readonly'),
+               UItem('line2', style = 'readonly'),
+               UItem('line3', style = 'readonly'),
+               show_border = True,
+               label = 'Message Log'
+           )
+   
+    view = View(group) 
 
 # TODO: Organize the metadata.
 class MetadataPanel(HasTraits):
@@ -139,5 +153,6 @@ class MetadataPanel(HasTraits):
     view = View(group, resizable=True)
 
 if __name__=='__main__':
-    ControlPanel().configure_traits()
+    #ControlPanel().configure_traits()
     #MetadataPanel().configure_traits()
+    MessageLog().configure_traits()

@@ -15,25 +15,30 @@
 ##############################################################################
 
 from traits.api import HasTraits, Instance
-from enthought.traits.ui.api import View, HSplit,VSplit, VGroup, UItem
+from enthought.traits.ui.api import View, HSplit,VSplit, VGroup, UItem, Group, Item
 from traits.api import on_trait_change
 from enable.api import ComponentEditor, Component
 from enthought.traits.ui.menu import NoButtons
 from chaco.api import HPlotContainer, VPlotContainer
 
 from rawviewer import RawViewer
-from controlpanel import ControlPanel, MetadataPanel
+from controlpanel import ControlPanel, MetadataPanel, MessageLog
 from handler import PyXDAHandler
 import sys
 import time
+from enthought.pyface.image_resource import ImageResource
+
+LOGO = ImageResource('C:/Users/Mark/Documents/GitHub/pyxda/pyxda/rawviewer/SrXes Icon.png')
 
 class UserInterface(HasTraits):
 
     def __init__(self, **kwargs):
+        self.i = 0
         super(UserInterface, self).__init__()
         self.add_trait('rawviewer', RawViewer())
         self.add_trait('cpanel', ControlPanel())
         self.add_trait('mdpanel', MetadataPanel())
+        self.add_trait('messagelog', MessageLog())
 
         self.rawviewer.startProcessJob()
         self.cpanel.sync_trait('datalistlength', self.rawviewer)
@@ -45,6 +50,8 @@ class UserInterface(HasTraits):
                                         resizeable='', use_backbuffer=True,
                                         bgcolor='transparent')
         self.rrpanel.get_preferred_size()
+    
+    
 
     # TODO: Adjust view
     view = View(
@@ -55,6 +62,7 @@ class UserInterface(HasTraits):
                      ),
                VGroup(
                     UItem('cpanel', style="custom", width=-430, padding=10),
+                    UItem('messagelog', style ="custom", width=-430, padding =10),
                     UItem('rrpanel', editor=ComponentEditor(), style='custom')
                      ),
                 show_labels=False,
@@ -63,7 +71,8 @@ class UserInterface(HasTraits):
             height = 0.96, width = 1.0,
             handler = PyXDAHandler(),
             buttons = NoButtons,
-            title = 'Raw Viewer')
+            title = 'SrXes',
+            image = LOGO)
 
     #############################
     # UI Action Handling
@@ -109,8 +118,21 @@ class UserInterface(HasTraits):
     
     @on_trait_change('rawviewer.loadimage.message', post_init=True)
     def handleMessage(self):
+        
         if self.rawviewer.loadimage.message != '':
-            self.cpanel.messageLog = self.rawviewer.loadimage.message
+            if self.i == 0:     
+                self.messagelog.line1 = 'Out: ' + self.rawviewer.loadimage.message
+                self.i = self.i +1
+                return
+            if self.i == 1:
+                self.messagelog.line2 = 'Out: ' + self.rawviewer.loadimage.message
+                self.i = self.i + 1
+                return
+            if self.i == 2:
+                self.messagelog.line3 = 'Out: ' + self.rawviewer.loadimage.message
+                self.i = 0
+                return
+        return
 
     
     # TODO: Update

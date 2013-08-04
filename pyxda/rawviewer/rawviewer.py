@@ -25,17 +25,8 @@ from display import Display
 from imagecontainer import Image, ImageCache
 from loadimages import LoadImage
 
-####################
-
-SIZE = 12
-
-####################
-
 class RawViewer(HasTraits):
     
-    ##############################################
-    # Initialize
-    ##############################################
     def __init__(self, **kwargs):
         super(RawViewer, self).__init__()
         
@@ -269,7 +260,6 @@ class RawViewer(HasTraits):
         if self.hasImage == False:
             return
 
-        #self.mapdata = np.zeros((SIZE, SIZE))
         self.rrplots = {}
         #self.rrplot = self.display.plotImage(None, 'Total Intensity Map')
         self.hascmap = False
@@ -283,7 +273,6 @@ class RawViewer(HasTraits):
         del self.datalist[:]
         self.datalistlength = 0
         return
-
 
     ##############################################
     # Job Processing
