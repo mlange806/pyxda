@@ -28,7 +28,7 @@ import sys
 import time
 from enthought.pyface.image_resource import ImageResource
 
-LOGO = ImageResource('C:/Users/Mark/Documents/GitHub/pyxda/pyxda/rawviewer/SrXes Icon.png')
+LOGO = ImageResource('SrXes-Icon.ico')
 
 class UserInterface(HasTraits):
 
@@ -72,7 +72,7 @@ class UserInterface(HasTraits):
             handler = PyXDAHandler(),
             buttons = NoButtons,
             title = 'SrXes',
-            image = LOGO)
+            icon = LOGO)
 
     #############################
     # UI Action Handling
