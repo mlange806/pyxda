@@ -14,7 +14,6 @@
 #
 ##############################################################################
 
-# EDIT IMPORTS AT END
 from enthought.traits.api import HasTraits, Instance, Event, Int, List, Bool, Str
 from chaco.api import Plot
 import numpy as np
@@ -28,6 +27,13 @@ from loadimages import LoadImage
 class RawViewer(HasTraits):
     
     def __init__(self, **kwargs):
+        """Constructor called when a RawViewer object is initialized
+        
+        Creates thread and defines thread attributes. Creates a job queue, list
+        of image data, and length of list. Establishes trait change attributes
+        for pic and datalistlengthadd. 
+    	"""
+    	
         super(RawViewer, self).__init__()
         
         self.processing_job = threading.Thread(target=self.processJob)
@@ -38,7 +44,8 @@ class RawViewer(HasTraits):
         self.add_trait('datalistlength', Int(0))
         
         self.on_trait_change(self.plotData, 'pic', dispatch='new')
-        self.on_trait_change(self.datalistLengthAdd,'datalistlengthadd', dispatch='ui')
+        self.on_trait_change(self.datalistLengthAdd,'datalistlengthadd', 
+                             dispatch='ui')
        
         self.initLoadimage()
         self.initDisplay()
@@ -46,6 +53,8 @@ class RawViewer(HasTraits):
         return
     
     def initLoadimage(self):
+        '''Initializes load variables'''
+        
         self.cache = ImageCache()
         self.add_trait('pic', Instance(Image, Image(-1, '')))
         self.pic.data = np.zeros((2048, 2048))
@@ -53,6 +62,8 @@ class RawViewer(HasTraits):
         return
 
     def initDisplay(self):
+        '''Initializes plots and plot settings'''
+        
         self.add_trait('display', Display(self.jobqueue))
         self.add_trait('loadimage', Instance(LoadImage))
         # TODO: Move to Display.
@@ -63,12 +74,13 @@ class RawViewer(HasTraits):
         self.plot1d.value_axis.title = "1D Cut"
         self.add_trait('histogram', Instance(Plot,
                                         self.display.plotHistogram(self.pic)))
-        self.add_trait('messageLog', Str(''))
         self.newndx = -1
         return
     
     # TODO: Update
     def initCMap(self):
+        '''Initializes rrplots and hascmap'''
+        
         self.hascmap = False
         #TODO
         #self.add_trait('rrplot', Instance(Plot, 
@@ -78,10 +90,17 @@ class RawViewer(HasTraits):
     ##############################################
     # Tasks  
     ##############################################
-    def addNewImage(self,path, **kwargs):
-        '''add new image and create jobs to process new image
-        image:    2d ndarray, new 2d image array
+    def addNewImage(self, path, **kwargs):
+        '''Add new image
+        
+        Adds new image and create jobs to process new image.
+        
+        Args:
+            path: File path of the image.
+        Exceptions:
+            TypeError: path is not a valid image path
         '''
+        
         #print 'Image Added'
         listn = len(self.datalist)
         self.datalist.append(Image(listn, path))
@@ -91,6 +110,12 @@ class RawViewer(HasTraits):
    
     
     def plotData(self):
+        '''Plot current data
+        
+        Plots the image located from pic.path. Plots an associated histogram
+        and 1D Plot.
+        '''
+        
         print 'Plot Data'
         self.pic.load()
         self.imageplot = self.display.plotImage(self.pic, self.imageplot)
@@ -102,14 +127,33 @@ class RawViewer(HasTraits):
     # TODO
     datalistlengthadd = Event
     def datalistLengthAdd(self):
-        '''add datalistlength by 1, only use this method to modify the datalistlength
-        otherwise there will be some problem of frame range in UI
+        '''Add datalistlength by 1
+        
+        Notice:
+            Only use this method to modify the datalistlength
+            otherwise there will be some problem of frame range in UI
         '''
-        #print 'DataListLengthAdd'
+
         self.datalistlength += 1
         return
 
     def startLoad(self, dirpath):
+        '''Start loading thread
+        
+        Display is reset if there is already data plotted. A LoadImage object
+        is created with access to jobqueue and dirpath. This object starts its
+        own thread that adds the first three image paths and then an initialize 
+        cache command to the jobqueue. After this, it continues to load the rest
+        of the image paths in the folder to the jobqueue.  
+        
+        Args:
+            dirpath: The folder path containing tiff files.
+        Exceptions:
+            No exceptions are thrown. However, if dirpath contains no tiff files
+            or the folder path is nonexistant, the message variable of loadimage
+            will change to a string with information why the path is invalid. 
+        '''
+        
         print 'Load Started'
         if self.hasImage == True:
             self.resetViewer()   
@@ -118,6 +162,12 @@ class RawViewer(HasTraits):
               
     # TODO: not as important
     def initCache(self):
+        '''Initialize the Image Cache
+        
+        Creates the initial image chache. The first image is loaded and ploted
+        to the screen. Then the next two are loaded.
+        '''
+        
         print 'Init Cache'
         self.pic = self.datalist[0]
         for i in range(2):
@@ -127,6 +177,15 @@ class RawViewer(HasTraits):
         return 
 
     def changeIndex(self, newndx):
+        '''Changes the image based on index
+        
+        The parameter, newndx, is made the new image index, self.newndx, and the
+        image of that index is plotted to the screen.
+        
+        Args:
+            newndx: An integer representing the next image index
+        '''
+        
         print 'Change Index'
         self.newndx = newndx
 
@@ -150,6 +209,16 @@ class RawViewer(HasTraits):
         return
 
     def updateCache(self, strnext):
+        '''Updates the image cache
+        
+        Loads and plots the image at index strnext. Two other images are loaded
+        behind and infront of that index. If this index is the first or last
+        in the list, it will only have one in front or behind loaded.
+        
+        Args:
+            strnext: An integer representing the next image index
+        '''
+        
         print 'Update Cache'
         print self.cache
         n = self.pic.n
@@ -187,24 +256,32 @@ class RawViewer(HasTraits):
                 else:
                     self.cache.append(Image(-1, ''))
 
-            '''
-                for i in range(2):
-                    n = self.newndx - i
-                    pic = self.datalist[n]
-                    self.cache.appendleft(pic)
-                    if i == 0:
-                        self.pic = pic
-                        self.plotnow = {}
-                if self.newndx is not self.datalistlength - 1:
-                    temp = self.datalist[self.newndx+1]
-                    self.cache.append(temp)
-                else:
+                #for i in range(2):
+                #    n = self.newndx - i
+                #    pic = self.datalist[n]
+                #    self.cache.appendleft(pic)
+                #    if i == 0:
+                #        self.pic = pic
+                #        self.plotnow = {}
+                #if self.newndx is not self.datalistlength - 1:
+                #    temp = self.datalist[self.newndx+1]
+                #    self.cache.append(temp)
+                #else:
                     self.cache.append(Image(-1, ''))
-            '''
+                    
         print self.cache
         return
 
     def _innerCache(self, n, i):
+        '''Plots new index
+        
+        Pops off the left side of cache and plots it. The cache is then updated.
+        
+        Args;
+            n: The new index.
+            i: Direction the index has traveled. -1 for left and 1 for right.
+        '''
+        
         self.pic = self.cache.popleft()
 
         self.cache.appendleft(self.pic)
@@ -217,6 +294,16 @@ class RawViewer(HasTraits):
         return
 
     def createRRPlot(self, rrchoice):
+        '''Creates a Reduced representation plot
+        
+        Creates a reduced representation plot for the image that is currently
+        being displayed. 
+        
+        Args:
+            rrchoice: The reduced representation to be plotted.
+        
+        '''
+        
         if self.datalistlength is 0 or self.hascmap is True:
             print 'Intensity Map Cannot be (Re)created.......'
             return
@@ -256,6 +343,12 @@ class RawViewer(HasTraits):
         return
 
     def resetViewer(self):
+        '''Resets the displays
+        
+        Resets the displays to the state they were in when the program first 
+        loaded.
+        '''
+        
         print 'Reset'
         if self.hasImage == False:
             return
@@ -278,13 +371,21 @@ class RawViewer(HasTraits):
     # Job Processing
     ##############################################
     def startProcessJob(self):
-        '''Call processImage thread and start image processing. This 
+        '''Start Job Process Thread
+        
+        Call processImage thread and start image processing. This 
         method should be called before the imageload thread.
         '''
+        
         self.processing_job.start()
         return
     
     def processJob(self):
+        '''Job Processing
+        
+        Waits for the job queue to fill up and then processes them.
+        '''
+        
         while True:
             #retrieve job data
             jobdata = self.jobqueue.get(block=True)
@@ -314,13 +415,3 @@ class RawViewer(HasTraits):
             self.jobqueue.task_done()
             
         return
-
-def main():
-    a = PyXDA()
-    a.startProcessJob()
-    a.loadimage.initLive()
-    a.loadimage.start()
-    return
-    
-if __name__=='__main__':
-    main()

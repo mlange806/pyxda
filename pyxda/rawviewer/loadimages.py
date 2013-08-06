@@ -14,7 +14,6 @@
 #
 ##############################################################################
 
-#!/usr/bin/env python
 import time
 import os
 import threading
@@ -102,11 +101,17 @@ class LoadImage(HasTraits, threading.Thread):
         """Inserts paths in filelist into jobqueue with job description
         
         Adds image paths to the queue in the following pattern:
+            
             [['newimage', {'path':<path1>}],
              ['newimage', {'path':<path2>}],
              ['newimage', {'path':<path3>}],
-             ['initcache']]
+             ['initcache']],
+             ['newimage', {'path':<path4>}],
+             ['newimage', {'path':<path5>}],
             etc...  
+            
+        The fourth job in the queue is the initialization of the cache which
+        will plot the first image to the screen.
     	"""
         
         #TODO: Hard Coded

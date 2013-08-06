@@ -31,9 +31,18 @@ from enthought.pyface.image_resource import ImageResource
 LOGO = ImageResource('SrXes-Icon.ico')
 
 class UserInterface(HasTraits):
+    '''UserInterface Class
+    
+    GUI for SrXes. Uses traits to watch for user interaction and then adds
+    jobs to a queue for processing. 
+    '''
 
     def __init__(self, **kwargs):
-        self.i = 0
+        '''Constructor for UserInterface object
+        
+        Adds panels and plots to a userinterface window.
+        '''
+        
         super(UserInterface, self).__init__()
         self.add_trait('rawviewer', RawViewer())
         self.add_trait('cpanel', ControlPanel())
@@ -72,23 +81,43 @@ class UserInterface(HasTraits):
             handler = PyXDAHandler(),
             buttons = NoButtons,
             title = 'SrXes',
+<<<<<<< HEAD
             icon = LOGO)
+=======
+            #image = LOGO
+            )
+>>>>>>> 0d38132cefd055a9482a9a5151bf7be5fd4b8bc7
 
     #############################
     # UI Action Handling
     #############################
     @on_trait_change('cpanel.left_arrow', post_init=True)
     def _left_arrow_fired(self):
+        '''Left arrow has been pushed
+        
+        Changes the image display to the left one over if it exists.
+        '''
+        
         self.rawviewer.jobqueue.put(['updatecache', ['left']])
         return
     
     @on_trait_change('cpanel.right_arrow', post_init=True)
     def _right_arrow_fired(self):
+        '''Right arrow has been pushed
+        
+        Changes the image display to the right one over if it exists.
+        '''
+        
         self.rawviewer.jobqueue.put(['updatecache', ['right']])
         return
     
     @on_trait_change('cpanel.generate', post_init=True)
     def _generate_fired(self):
+        '''Generate Intensity button has been pushed
+        
+        Creates a reduced representation plot in the GUI.
+        '''
+        
         self.rawviewer.jobqueue.put(['plotrr', [self.cpanel.rrchoice]])
         time.sleep(0.5)
         self.updateRRPanel(self.cpanel.rrchoice)
@@ -96,10 +125,23 @@ class UserInterface(HasTraits):
     
     @on_trait_change('cpanel.dirpath', post_init=True)
     def _dirpath_changed(self):
+        '''Directory path has changed
+        
+        If there are tiff images in the folder path, they will be loaded and 
+        the first image will be plotted to the screen. If there are no tiff
+        images or the path is invalid, rawviewer.message will be changed to a
+        string explaining the error.
+        '''
+        
         self.rawviewer.jobqueue.put(['startload', [self.cpanel.dirpath]])
     
     @on_trait_change('rawviewer.pic', post_init=True)
     def _pic_changed(self):
+        '''The displayed 2D image has been changed
+        
+        Changes the control panel index, and the metadata associated with it.
+        '''
+        
         pic =  self.rawviewer.pic
         self.cpanel.index = pic.n + 1
         self.mdpanel.name = pic.name
@@ -110,6 +152,11 @@ class UserInterface(HasTraits):
         
     @on_trait_change('rawviewer.display.filename', post_init=True)
     def _filename_changed(self):
+        '''The filename of the 2D image has changed
+        
+        Changes the displayed filename to the updated one.
+        '''
+        
         print 'filename changed'
         if self.rawviewer.display.filename == -1:
             self.cpanel.filename = ''
@@ -118,25 +165,36 @@ class UserInterface(HasTraits):
     
     @on_trait_change('rawviewer.loadimage.message', post_init=True)
     def handleMessage(self):
+        '''Rawviewer.message has changed
         
+        Displays the new message in messagelog. If there is already a message 
+        inside messagelog, the new one is plotted below it.
+        '''
+    
         if self.rawviewer.loadimage.message != '':
-            if self.i == 0:     
+            if self.messagelog.line_pos == 0:     
                 self.messagelog.line1 = 'Out: ' + self.rawviewer.loadimage.message
-                self.i = self.i +1
+                self.messagelog.line_pos = self.messagelog.line_pos +1
                 return
-            if self.i == 1:
+            if self.messagelog.line_pos == 1:
                 self.messagelog.line2 = 'Out: ' + self.rawviewer.loadimage.message
-                self.i = self.i + 1
+                self.messagelog.line_pos = self.messagelog.line_pos + 1
                 return
-            if self.i == 2:
+            if self.messagelog.line_pos == 2:
                 self.messagelog.line3 = 'Out: ' + self.rawviewer.loadimage.message
-                self.i = 0
+                self.messagelog.line_pos = 0
                 return
         return
 
     
     # TODO: Update
     def createImagePanel(self):
+        '''Creates the Image Panel
+        
+        Creates the image panel that contains the 2D image, colorbarm histogram,
+        and 1D slice.
+        '''
+        
         cont = VPlotContainer(stack_order = 'top_to_bottom',
                                 bgcolor = 'transparent',
                                 use_backbuffer=True)
@@ -158,6 +216,12 @@ class UserInterface(HasTraits):
         return
 
     def updateRRPanel(self, choice):
+        '''Updates the Reduced Representation Panel
+        
+        Args:
+            choice: the new variable for the RR. eg: mean, total intensity...
+        '''
+        
         rrplots = getattr(self.rawviewer, 'rrplots')
         
         if rrplots[choice] not in self.rrpanel._components:
@@ -167,6 +231,8 @@ class UserInterface(HasTraits):
         return
 
 def main():
+    '''Initializes the GUI window'''
+    
     ui = UserInterface()
     ui.configure_traits()
 
