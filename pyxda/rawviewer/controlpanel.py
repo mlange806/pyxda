@@ -15,13 +15,18 @@
 ##############################################################################
 
 from traits.api import HasTraits, Directory, Button, Int, Str, Enum, CStr
-from enthought.traits.ui.api import View, Item, Group, HGroup, HSplit, VGroup, \
-                                    Heading, DirectoryEditor, TitleEditor, VFlow, \
-                                    VGrid, UItem
-from chaco.api import GridContainer
+from enthought.traits.ui.api import View, Item, Group, HGroup, \
+                                        DirectoryEditor, TitleEditor, VGrid, \
+                                        UItem
 
 class ControlPanel(HasTraits):
-    '''Contains tools to interact with image.'''
+    '''Module that contains GUI widgets
+    
+    Items include:
+        Directory Selection
+        Arrow keys and image index
+        Reduced Representation list and generation
+    '''
     
     dirpath = Directory()
     left_arrow = Button('<')
@@ -33,7 +38,9 @@ class ControlPanel(HasTraits):
     index = Int(0)
     of = Str('of')
     datalistlength = Int(0) 
-    rrchoice = Enum('Choose a Reduced Representation', 'Total Intensity', 'Mean', 'Standard Deviation', 'Pixels Above Upper Bound', 'Pixels Below Lower Bound')
+    rrchoice = Enum('Choose a Reduced Representation', 'Total Intensity', 
+                    'Mean', 'Standard Deviation', 'Pixels Above Upper Bound', 
+                    'Pixels Below Lower Bound')
     filename = Str('')
     messageLog = CStr('')
 
@@ -47,9 +54,11 @@ class ControlPanel(HasTraits):
                           ),
                     Item('spacer', show_label = False, style = 'readonly'),
                     HGroup(
-                        Item('index', show_label = False, width=-30, height=-20),
+                        Item('index', show_label = False, width=-30, 
+                             height=-20),
                         Item('of', show_label = False, style = 'readonly'),
-                        Item('datalistlength', show_label = False, style = 'readonly'),
+                        Item('datalistlength', show_label = False, 
+                             style = 'readonly'),
                         padding = 5
                           ) 
                       ),
@@ -57,11 +66,17 @@ class ControlPanel(HasTraits):
                 Item('generate', show_label = False),
                 UItem('filename', style = 'readonly'),
                 show_border = True,
-                )
+            )
     
     view = View(group)
     
 class MessageLog(HasTraits):
+    '''Three line message box
+    
+    Contains three lines that can each be accessed and wrote over.
+    '''
+    line_pos = Int(0)
+    
     line1 = Str('Out: ')
     line2 = Str('Out: ')
     line3 = Str('Out: ')
@@ -78,6 +93,7 @@ class MessageLog(HasTraits):
 
 # TODO: Organize the metadata.
 class MetadataPanel(HasTraits):
+    '''Messagebox for displaying metadata'''
     
     name = Str('2D Image')
     height = Str('')
@@ -115,26 +131,13 @@ class MetadataPanel(HasTraits):
     group = Group(
                 Item('name', editor=TitleEditor(), show_label=False),
                 VGrid(
-                    Item('height'),
-                    Item('width'),
-                    Item('qxrdVersion'),
-                    Item('qtVersion'),
-                    Item('dataType'),
-                    Item('dataTypeName'),
-                    Item('fileBase'),
-                    Item('fileName'),
-                    Item('title'),
-                    Item('readoutMode'),
-                    Item('summedExposures'),
-                    Item('imageNumber'),
-                    Item('phaseNumber'),
-                    Item('nPhases'),
-                    Item('dateTime'),
-                    Item('dateString'),
-                    Item('hBinning'),
-                    Item('vBinning'),
-                    Item('cameraGain'),
-                    Item('triggered'),
+                    Item('height'), Item('width'), Item('qxrdVersion'),
+                    Item('qtVersion'), Item('dataType'), Item('dataTypeName'),
+                    Item('fileBase'), Item('fileName'), Item('title'),
+                    Item('readoutMode'), Item('summedExposures'), 
+                    Item('imageNumber'), Item('phaseNumber'), Item('nPhases'),
+                    Item('dateTime'), Item('dateString'), Item('hBinning'),
+                    Item('vBinning'), Item('cameraGain'), Item('triggered'),
                     Item('userComment1'),
                     Item('userComment2'),
                     Item('userComment3'),
@@ -153,6 +156,6 @@ class MetadataPanel(HasTraits):
     view = View(group, resizable=True)
 
 if __name__=='__main__':
-    #ControlPanel().configure_traits()
+    ControlPanel().configure_traits()
     #MetadataPanel().configure_traits()
-    MessageLog().configure_traits()
+    #MessageLog().configure_traits()
