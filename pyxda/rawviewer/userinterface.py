@@ -81,12 +81,7 @@ class UserInterface(HasTraits):
             handler = PyXDAHandler(),
             buttons = NoButtons,
             title = 'SrXes',
-<<<<<<< HEAD
             icon = LOGO)
-=======
-            #image = LOGO
-            )
->>>>>>> 0d38132cefd055a9482a9a5151bf7be5fd4b8bc7
 
     #############################
     # UI Action Handling
